@@ -1,0 +1,96 @@
+# ==========================================
+# 1. Dependencies & Package Managers
+# ==========================================
+# Excludes the heavy folders where npm/yarn install your packages
+node_modules/
+/jspm_packages/
+/bower_components/
+
+# Optional: Keep lockfiles in git to lock down versions. 
+# Uncomment the line below if you don't want to track lockfiles at all.
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+
+# ==========================================
+# 2. Environment Variables & Secrets
+# ==========================================
+# CRITICAL: Never commit raw .env files containing API keys, passwords, or tokens
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+
+# ==========================================
+# 3. Production & Build Outputs
+# ==========================================
+# React build folder (Creaet React App uses /build, Vite uses /dist)
+/build
+/dist
+/dist-ssr
+/out
+
+# Express/Node build outputs (if using TypeScript or Babel compilation)
+/lib
+/output
+/*.tgz
+
+
+# ==========================================
+# 4. Logs, Runtime, and Diagnostic Files
+# ==========================================
+# Server logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Node process management and runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+
+# ==========================================
+# 5. Testing & Code Quality Caches
+# ==========================================
+# Testing coverage reports
+/coverage
+/.nyc_output
+
+# Linters and formatters caches
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+
+# ==========================================
+# 6. Operating System & IDE Specifics
+# ==========================================
+# macOS clutter
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows clutter
+Thumbs.db
+Ehthumbs.db
+Desktop.ini
+
+# Visual Studio Code settings
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+
+# WebStorm / IntelliJ / JetBrains IDEs
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
