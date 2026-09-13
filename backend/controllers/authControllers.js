@@ -5,140 +5,175 @@ const bcrypt = require("bcrypt");
 const sendEmail = require("../utils/emailSender");
 const jwt = require("jsonwebtoken");
 
-const regController = async (req, res) => {
+// registration
+const registrationController = async (req, res) => {
   try {
-    const { name, email, password, confirmPassword, terms } = req.body;
-    if (!email || !password || !terms) {
+    const { fullName, email, password, confirmPassword, terms } = req.body;
+
+    if (!fullName || !email || !password || !confirmPassword || !terms) {
       return res.status(400).json({
         success: false,
-        message: "Please fill all fields",
+        message: "Please fill all the fields",
       });
     }
+
     if (!emailRegex.test(email)) {
       return res.status(400).json({
         success: false,
-        message: "Provide a valid email",
+        message: "Use a valid email",
       });
     }
 
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
         success: false,
-        message: "Password must contain letter and number",
+        message: "Use a valid password",
       });
     }
 
     if (password !== confirmPassword) {
       return res.status(400).json({
         success: false,
-        message: "Password do not match",
+        message: "Password not matched",
       });
     }
 
-    const hashPassword = bcrypt.hashSync(password, 5);
+    const existingUser = await User.findOne({email});
 
-    const user = new User({ email, terms, name, password: hashPassword });
-    await user.save();
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        message: "User already exist",
+      });
+    }
 
-    const token = jwt.sign(
-      { _id: user._id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" },
+    const hashPassword = await bcrypt.hash(password, 10);
+
+    const user = await new User({
+      email: email,
+      fullName: fullName,
+      terms: terms,
+      password: hashPassword,
+    }).save();
+
+    // jwt.sign({data,secret,expire})
+    const token = jwt.sign({
+        _id: user._id,
+        email: user.email,
+        role: user.role,
+      },process.env.JWT_SECRET_ACCESS,
+      { expiresIn: "1d" }
     );
 
-    sendEmail(email, token);
+    await sendEmail(email, token);
 
     return res.status(201).json({
       success: true,
-      message: "Register success",
+      message: "Register success. Please check your email.",
     });
   } catch (error) {
+    console.error("Registration Error: ", error);
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "server error", 
     });
   }
 };
 
+// login
 const loginController = async (req, res) => {
   try {
     const { email, password } = req.body;
+
     if (!email || !password) {
       return res.status(400).json({
         success: false,
         message: "Please fill all fields",
       });
     }
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({
+
+    const existingUser = await User.findOne({email});
+
+    if (!existingUser) {
+      return res.status(401).json({
         success: false,
-        message: "Invalid Credential",
+        message: "User not exist",
       });
     }
-    const passwordVerify = await bcrypt.compare(password, user.password);
-    if (!passwordVerify) {
-      return res.status(400).json({
+
+    const verifyPassword = await bcrypt.compare(password, existingUser.password);
+
+    if (!verifyPassword) {
+      return res.status(401).json({
         success: false,
-        message: "Invalid Credential",
+        message: "Invalid email or password",
       });
     }
+
     return res.status(200).json({
       success: true,
       message: "Login Successful",
-      data: { _id: user._id, name: user.name },
+      data: { 
+        _id: existingUser._id,
+        fullName: existingUser.fullName,
+        email: existingUser.email,
+        role: existingUser.role,
+      },
     });
   } catch (error) {
+    console.error("Login Error: ", error);
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "server error",
     });
   }
 };
 
-const verifyUserController = async (req, res) => {
+// verify
+const verifyController = async (req, res) => {
   try {
     const { token } = req.params;
+    
     if (!token) {
-      return res.status(400).json({
-        success: false,
-        message: "Please send token",
+      return res.status(400).json({ 
+        success: false, 
+        message: "Token is missing" 
       });
     }
 
-    const decode = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET);
-    if (!decode) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid token",
-      });
-    }
-    const user = await User.findById(decode._id);
-    if (user.isVerified) {
-      return res.status(400).json({
-        success: false,
-        message: "Account already verified",
+    const decode = jwt.verify(token, process.env.JWT_SECRET_ACCESS); 
+
+    const existingUser = await User.findById(decode._id);
+    
+    if (!existingUser) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "User not found" 
       });
     }
 
-    user.isVerified = true;
+    if (existingUser.isVerified) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "account is already verified" 
+      });
+    }
 
-    await user.save();
+    existingUser.isVerified = true;
+    await existingUser.save();
+    
     return res.status(200).json({
       success: true,
-      message: "Account verified successfully",
-      data: user,
+      message: "account verified successfully",
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    console.error("Verification Error: ", error);
+    return res.status(400).json({ 
+      success: false, 
+      message: "Invalid or expired token" 
+    }); 
   }
 };
 
-module.exports = {
-  regController,
-  loginController,
-  verifyUserController,
-};
+
+module.exports = {registrationController,loginController,verifyController};
