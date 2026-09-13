@@ -13,7 +13,7 @@ const registrationController = async (req, res) => {
     if (!fullName || !email || !password || !confirmPassword || !terms) {
       return res.status(400).json({
         success: false,
-        message: "Please fill all the fields",
+        message: "please fill all the fields",
       });
     }
 
