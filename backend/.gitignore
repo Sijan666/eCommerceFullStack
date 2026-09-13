@@ -1,32 +1,8 @@
-# ==========================================
-# 1. Dependencies & Package Managers
-# ==========================================
 # Excludes the heavy folders where npm/yarn install your packages
 node_modules/
 /jspm_packages/
 /bower_components/
 
-# Optional: Keep lockfiles in git to lock down versions. 
-# Uncomment the line below if you don't want to track lockfiles at all.
-# package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
-
-
-# ==========================================
-# 2. Environment Variables & Secrets
-# ==========================================
-# CRITICAL: Never commit raw .env files containing API keys, passwords, or tokens
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-
-# ==========================================
-# 3. Production & Build Outputs
-# ==========================================
 # React build folder (Creaet React App uses /build, Vite uses /dist)
 /build
 /dist
@@ -38,10 +14,6 @@ node_modules/
 /output
 /*.tgz
 
-
-# ==========================================
-# 4. Logs, Runtime, and Diagnostic Files
-# ==========================================
 # Server logs
 *.log
 npm-debug.log*
@@ -55,10 +27,6 @@ pids
 *.seed
 *.pid.lock
 
-
-# ==========================================
-# 5. Testing & Code Quality Caches
-# ==========================================
 # Testing coverage reports
 /coverage
 /.nyc_output
@@ -68,10 +36,6 @@ pids
 .stylelintcache
 *.tsbuildinfo
 
-
-# ==========================================
-# 6. Operating System & IDE Specifics
-# ==========================================
 # macOS clutter
 .DS_Store
 .AppleDouble
