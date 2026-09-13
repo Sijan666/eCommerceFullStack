@@ -170,7 +170,7 @@ const verifyController = async (req, res) => {
     console.error("Verification Error: ", error);
     return res.status(400).json({ 
       success: false, 
-      message: "Invalid or expired token" 
+      message: "invalid or expired token" 
     }); 
   }
 };
