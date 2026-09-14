@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const sendEmail = require("../utils/emailSender");
 const jwt = require("jsonwebtoken");
 
+
 // registration
 const registrationController = async (req, res) => {
   try {
@@ -80,6 +81,7 @@ const registrationController = async (req, res) => {
   }
 };
 
+
 // login
 const loginController = async (req, res) => {
   try {
@@ -128,6 +130,7 @@ const loginController = async (req, res) => {
     });
   }
 };
+
 
 // verify
 const verifyController = async (req, res) => {
