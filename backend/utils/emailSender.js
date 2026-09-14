@@ -11,12 +11,24 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendEmail = async (email, token) => {
+  try {
     const info = await transporter.sendMail({
       from: `"Sijan" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Verifying email",
-      html: `Please verify your email by clicking the link below: http://localhost:5000/verify/${token}`,
+      html: `
+        <h3>Hello!</h3>
+        <p>Please verify your email by clicking the link below:</p>
+        <a href="http://localhost:5000/verify/${token}" target="_blank">Click here to verify</a>
+      `,
     });
+    
+    console.log("Email sent successfully: ", info.messageId);
+    return true;
+  } catch (error) {
+    console.error("Error sending email: ", error);
+    return false;
+  }
 };
 
 module.exports = sendEmail;
