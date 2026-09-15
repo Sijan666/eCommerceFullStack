@@ -144,27 +144,10 @@ const verifyController = async (req, res) => {
       });
     }
 
-    const decode = jwt.verify(token, process.env.JWT_SECRET_ACCESS); 
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_ACCESS);
 
-    const existingUser = await User.findById(decode._id);
-    
-    if (!existingUser) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "User not found" 
-      });
-    }
+    await User.findByIdAndUpdate({_id:decoded._id} , {isVarified : true})
 
-    if (existingUser.isVerified) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "account is already verified" 
-      });
-    }
-
-    existingUser.isVerified = true;
-    await existingUser.save();
-    
     return res.status(200).json({
       success: true,
       message: "account verified successfully",
