@@ -25,7 +25,7 @@ const userSchema = new Schema({
     },
     status: {
       type: String,
-      enum: ["active", "suspended"],
+      enum: ["active", "deactive"],
       default: "active",
     },
     isVerified: {
