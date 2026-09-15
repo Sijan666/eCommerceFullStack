@@ -63,7 +63,7 @@ const registrationController = async (req, res) => {
         email: user.email,
         role: user.role,
       },process.env.JWT_SECRET_ACCESS,
-      { expiresIn: "1d" }
+      { expiresIn: "7d" }
     );
 
     await sendEmail(email, token);
@@ -112,16 +112,27 @@ const loginController = async (req, res) => {
       });
     }
 
-    return res.status(200).json({
-      success: true,
-      message: "Login Successful",
-      data: { 
-        _id: existingUser._id,
-        fullName: existingUser.fullName,
-        email: existingUser.email,
-        role: existingUser.role,
-      },
-    });
+    if (verifyPassword) {
+      // jwt.sign({data,secret,expire})
+      const accessToken = jwt.sign({
+          _id: existingUser._id,
+          email: existingUser.email,
+          role: existingUser.role,
+        },process.env.JWT_SECRET_ACCESS,
+        { expiresIn: "30d" }
+      );
+      res.status(200).json({
+        success: true,
+        message: "Login Successful",
+        data: { 
+          _id: existingUser._id,
+          fullName: existingUser.fullName,
+          email: existingUser.email,
+          role: existingUser.role,
+        },
+        accessToken : accessToken
+      });
+    }
   } catch (error) {
     console.error("Login Error: ", error);
     return res.status(500).json({
