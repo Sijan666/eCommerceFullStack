@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const sendEmail = async (email, token) => {
+async function verificationEmail(email , token) {
   try {
     const info = await transporter.sendMail({
       from: `"Sijan" <${process.env.EMAIL_USER}>`,
@@ -29,6 +29,26 @@ const sendEmail = async (email, token) => {
     console.error("Error sending email: ", error);
     return false;
   }
-};
+}
 
-module.exports = sendEmail;
+async function forgetPassEmail(email , token) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"Sijan" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Forget email",
+      html: `
+        <h3>Hello!</h3>
+        <a href="http://localhost:5000/resetpassword/${token}" target="_blank">Click here to reset your password</a>
+      `,
+    });
+    
+    console.log("Email sent successfully: ", info.messageId);
+    return true;
+  } catch (error) {
+    console.error("Error sending email: ", error);
+    return false;
+  }
+}
+
+module.exports = {verificationEmail , forgetPassEmail};
