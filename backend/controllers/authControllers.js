@@ -2,7 +2,7 @@ const User = require("../models/userSchema");
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 const bcrypt = require("bcrypt");
-const sendEmail = require("../utils/emailSender");
+const {verificationEmail, forgetPassEmail} = require("../utils/emailSender");
 const jwt = require("jsonwebtoken");
 
 
@@ -66,7 +66,7 @@ const registrationController = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    await sendEmail(email, token);
+    await verificationEmail  (email, token);
 
     return res.status(201).json({
       success: true,
@@ -97,7 +97,7 @@ const loginController = async (req, res) => {
     const existingUser = await User.findOne({email});
 
     if (!existingUser) {
-      return res.status(401).json({
+      return res.status(400).json({
         success: false,
         message: "User not exist",
       });
@@ -173,4 +173,43 @@ const verifyController = async (req, res) => {
 };
 
 
-module.exports = {registrationController,loginController,verifyController};
+// forget
+const forgetPasswordController = async (req,res) => {
+  const {email} =  req.body
+
+  if (!email) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "email is missing" 
+      });
+  }
+
+  const existingUser = await User.findOne({email});
+
+  if (!existingUser) {
+    return res.status(400).json({
+      success: false,
+      message: "User not exist",
+    });
+  }
+
+  const forgetPassToken = jwt.sign({
+      _id: existingUser._id,
+      email: existingUser.email,
+      role: existingUser.role,
+    },process.env.JWT_SECRET_ACCESS,
+    { expiresIn: "5m" }
+  );
+
+  await forgetPassEmail  (email, forgetPassToken);
+
+  res.status(200).json({
+    success: true,
+    message: "Please check your email",
+  });
+
+
+}
+
+
+module.exports = {registrationController,loginController,verifyController,forgetPasswordController};
