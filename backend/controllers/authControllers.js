@@ -70,7 +70,7 @@ const registrationController = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "Register success. Please check your email.",
+      message: "Registration successful. Please check your email for verification.",
     });
   } catch (error) {
     console.error("Registration Error: ", error);
@@ -157,7 +157,7 @@ const verifyController = async (req, res) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_ACCESS);
 
-    await User.findByIdAndUpdate({_id:decoded._id} , {isVarified : true})
+    await User.findByIdAndUpdate(decoded._id, { isVerified: true });
 
     return res.status(200).json({
       success: true,
@@ -165,51 +165,113 @@ const verifyController = async (req, res) => {
     });
   } catch (error) {
     console.error("Verification Error: ", error);
-    return res.status(400).json({ 
-      success: false, 
-      message: "invalid or expired token" 
-    }); 
+    
+    if (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError") {
+      return res.status(401).json({ 
+        success: false, 
+        message: "invalid or expired token" 
+      }); 
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "server error"
+    });
   }
 };
 
 
 // forget
-const forgetPasswordController = async (req,res) => {
-  const {email} =  req.body
+const forgetPasswordController = async (req, res) => {
+  try {
+    const { email } = req.body;
 
-  if (!email) {
+    if (!email) {
       return res.status(400).json({ 
-        success: false, 
+        success: false,
         message: "email is missing" 
       });
-  }
+    }
 
-  const existingUser = await User.findOne({email});
+    const existingUser = await User.findOne({ email });
 
-  if (!existingUser) {
-    return res.status(400).json({
-      success: false,
-      message: "User not exist",
+    if (!existingUser) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "User not exist" 
+      });
+    }
+
+    const forgetPassToken = jwt.sign(
+      {
+        _id: existingUser._id,
+        email: existingUser.email,
+        role: existingUser.role,
+      },
+      process.env.JWT_SECRET_ACCESS,
+      { expiresIn: "5m" }
+    );
+
+    await forgetPassEmail(email, forgetPassToken);
+
+    res.status(200).json({
+      success: true,
+      message: "Please check your email",
+    });
+  } catch (error) {
+    console.error("Forget Password Error: ", error);
+    return res.status(500).json({ 
+      success: false, 
+      message: "server error" 
     });
   }
+};
 
-  const forgetPassToken = jwt.sign({
-      _id: existingUser._id,
-      email: existingUser.email,
-      role: existingUser.role,
-    },process.env.JWT_SECRET_ACCESS,
-    { expiresIn: "5m" }
-  );
+// reset
+const resetPasswordController = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { newPassword, confirmPassword } = req.body;
 
-  await forgetPassEmail  (email, forgetPassToken);
+    if (!newPassword || !confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide both new password and confirm password"
+      });
+    }
 
-  res.status(200).json({
-    success: true,
-    message: "Please check your email",
-  });
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Passwords do not match"
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_ACCESS);
+
+    const hashPassword = await bcrypt.hash(newPassword, 10);
+
+    await User.findByIdAndUpdate({_id:decoded._id}, { password: hashPassword });
+
+    return res.status(200).json({
+      success: true,
+      message: "Password updated successfully"
+    });
+
+  } catch (error) {
+    if (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        success: false,
+        message: "invalid or expired token"
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "server error"
+    });
+  }
+};
 
 
-}
-
-
-module.exports = {registrationController,loginController,verifyController,forgetPasswordController};
+module.exports = {registrationController,loginController,verifyController,forgetPasswordController,resetPasswordController};
