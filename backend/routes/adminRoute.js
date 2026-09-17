@@ -1,9 +1,9 @@
 const express = require("express")
-const { adminController } = require("../controllers/adminController")
+const { alluserController } = require("../controllers/adminController")
 const router = express.Router()
 
 
-router.post("/delete/vendor", adminController)
+router.post("/alluser", alluserController)
 
 
 module.exports = router
