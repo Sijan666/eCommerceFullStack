@@ -51,4 +51,25 @@ async function forgetPassEmail(email , token) {
   }
 }
 
-module.exports = {verificationEmail , forgetPassEmail};
+
+async function notifyAdminEmail(email, name) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"Sijan" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "New Category Approval",
+      html: `
+        <h3>Hello Admin</h3>
+        <p>A new category <b>${name}</b> has been created.</p>
+      `,
+    });
+    
+    console.log("Email sent successfully: ", info.messageId);
+    return true;
+  } catch (error) {
+    console.error("Error sending email: ", error);
+    return false;
+  }
+}
+
+module.exports = { verificationEmail, forgetPassEmail, notifyAdminEmail };
