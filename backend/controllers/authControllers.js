@@ -63,7 +63,7 @@ const registrationController = async (req, res) => {
         email: user.email,
         role: user.role,
       },process.env.JWT_SECRET_ACCESS,
-      { expiresIn: "7d" }
+      { expiresIn: "10m" }
     );
 
     await verificationEmail  (email, token);
@@ -77,67 +77,6 @@ const registrationController = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "server error", 
-    });
-  }
-};
-
-
-// login
-const loginController = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Please fill all fields",
-      });
-    }
-
-    const existingUser = await User.findOne({email});
-
-    if (!existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "User not exist",
-      });
-    }
-
-    const verifyPassword = await bcrypt.compare(password, existingUser.password);
-
-    if (!verifyPassword) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password",
-      });
-    }
-
-    if (verifyPassword) {
-      // jwt.sign({data,secret,expire})
-      const accessToken = jwt.sign({
-          _id: existingUser._id,
-          email: existingUser.email,
-          role: existingUser.role,
-        },process.env.JWT_SECRET_ACCESS,
-        { expiresIn: "30d" }
-      );
-      res.status(200).json({
-        success: true,
-        message: "Login Successful",
-        data: { 
-          _id: existingUser._id,
-          fullName: existingUser.fullName,
-          email: existingUser.email,
-          role: existingUser.role,
-        },
-        accessToken : accessToken
-      });
-    }
-  } catch (error) {
-    console.error("Login Error: ", error);
-    return res.status(500).json({
-      success: false,
-      message: "server error",
     });
   }
 };
@@ -176,6 +115,74 @@ const verifyController = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "server error"
+    });
+  }
+};
+
+
+// login
+const loginController = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Please fill all fields",
+      });
+    }
+
+    const existingUser = await User.findOne({email});
+
+    if (!existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User not exist",
+      });
+    }
+
+    if (!existingUser.isVerified) {
+      return res.status(403).json({
+        success: false,
+        message: "please verify your email first",
+      });
+    }
+
+    const verifyPassword = await bcrypt.compare(password, existingUser.password);
+
+    if (!verifyPassword) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    if (verifyPassword) {
+      // jwt.sign({data,secret,expire})
+      const accessToken = jwt.sign({
+          _id: existingUser._id,
+          email: existingUser.email,
+          role: existingUser.role,
+        },process.env.JWT_SECRET_ACCESS,
+        { expiresIn: "30d" }
+      );
+      res.status(200).json({
+        success: true,
+        message: "Login Successful",
+        data: { 
+          _id: existingUser._id,
+          fullName: existingUser.fullName,
+          email: existingUser.email,
+          role: existingUser.role,
+        },
+        accessToken : accessToken
+      });
+    }
+  } catch (error) {
+    console.error("Login Error: ", error);
+    return res.status(500).json({
+      success: false,
+      message: "server error",
     });
   }
 };
@@ -226,6 +233,7 @@ const forgetPasswordController = async (req, res) => {
     });
   }
 };
+
 
 // reset
 const resetPasswordController = async (req, res) => {
