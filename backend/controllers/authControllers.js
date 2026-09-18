@@ -158,7 +158,7 @@ const loginController = async (req, res) => {
     }
 
     if (verifyPassword) {
-      jwt.sign({data,secret,expire})
+      // jwt.sign({data,secret,expire})
       const accessToken = jwt.sign({
           _id: existingUser._id,
           email: existingUser.email,
