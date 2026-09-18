@@ -251,7 +251,7 @@ const resetPasswordController = async (req, res) => {
     if (newPassword !== confirmPassword) {
       return res.status(400).json({
         success: false,
-        message: "Passwords do not match"
+        message: "Passwords not matched"
       });
     }
 
