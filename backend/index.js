@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoDb = require('./config/mongoDb');
+const { swaggerUI, specs } = require('./config/swagger');
 const authRoute = require('./routes/authRoute');
 const userRoute = require('./routes/userRoute');
 const adminRoute = require('./routes/adminRoute');
@@ -16,6 +17,8 @@ mongoDb()
 
 app.use(express.json());
 app.use(cors());
+
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
 
 app.use('/api/v1/auth', authRoute)
 app.use('/api/v1/user',userMiddleware, userRoute)
