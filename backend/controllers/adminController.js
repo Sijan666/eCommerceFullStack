@@ -53,7 +53,7 @@ const singleUserController = async (req,res) => {
 }
 
 
-// single user
+// active user
 const activeUserController = async (req,res) => {
 
     let data = await User.find({status : 'active'})
