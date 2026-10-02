@@ -30,37 +30,5 @@ const router = express.Router()
  */
 router.post("/updateprofile", updateprofileController)
 
-/**
- * @swagger
- * /api/v1/user/createcategory:
- *   post:
- *     summary: request a new category
- *     tags: [User]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *     responses:
- *       201:
- *         description: success
- */
-router.post("/createcategory", createCategory)
-
-/**
- * @swagger
- * /api/v1/user/allcategories:
- *   get:
- *     summary: get all categories
- *     tags: [User]
- *     responses:
- *       200:
- *         description: success
- */
-router.get("/allcategories", allCategories)
 
 module.exports = router
