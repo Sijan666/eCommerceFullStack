@@ -72,4 +72,24 @@ async function notifyAdminEmail(email, name) {
   }
 }
 
-module.exports = { verificationEmail, forgetPassEmail, notifyAdminEmail };
+async function subCatAdminEmail(email, name) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"Sijan" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "New Category Approval",
+      html: `
+        <h3>Hello Admin</h3>
+        <p>A new sub category <b>${name}</b> has been created.</p>
+      `,
+    });
+    
+    console.log("Email sent successfully: ", info.messageId);
+    return true;
+  } catch (error) {
+    console.error("Error sending email: ", error);
+    return false;
+  }
+}
+
+module.exports = { verificationEmail, forgetPassEmail, notifyAdminEmail ,subCatAdminEmail};
