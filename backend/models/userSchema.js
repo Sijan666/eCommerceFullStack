@@ -13,6 +13,7 @@ const userSchema = new Schema({
     password: {
       type: String,
       required: true,
+      select : false
     },
     terms: {
       type: Boolean,
@@ -20,7 +21,7 @@ const userSchema = new Schema({
     },
     role: {
       type: String,
-      enum: ["user", "admin"],
+      enum: ["user", "admin" , "vendor"],
       default: "user",
     },
     status: {
