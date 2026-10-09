@@ -2,6 +2,7 @@ const Categories = require('../models/categorySchema');
 const SubCategory = require('../models/subCategorySchema');
 const {notifyAdminEmail,subCatAdminEmail} = require('../utils/emailSender');
 const User = require("../models/userSchema");
+const ownerCategoryPromise = require('../utils/ownerCategoryPromise')
 
 // create category
 const createCategory = async (req,res) => {
@@ -135,7 +136,7 @@ const categorywisesubcategory = async (req,res) => {
 // owner wise category
 const ownerwisecategory = async (req,res) => {
     let {id} = req.params
-    let data = await Category.find({owner : id})
+    const data = await ownerCategoryPromise(id)
     return res.status(200).json({
         success : true,
         message : "Owner wise category",
