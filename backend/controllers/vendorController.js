@@ -123,7 +123,6 @@ const allsubCategories = async (req, res) => {
             data: subcategories
         });
     } catch (error) {
-        console.error("Error in allsubCategories:", error);
         return res.status(500).json({
             success: false,
             message: "Failed to fetch sub categories",
@@ -144,7 +143,6 @@ const categorywisesubcategory = async (req, res) => {
             data: categorywisesubcategory
         });
     } catch (error) {
-        console.error("Error in categorywisesubcategory:", error);
         return res.status(500).json({
             success: false,
             message: "Failed to fetch category wise sub category",
@@ -165,7 +163,6 @@ const ownerwisecategory = async (req, res) => {
             data: data
         });
     } catch (error) {
-        console.error("Error in ownerwisecategory:", error);
         return res.status(500).json({
             success: false,
             message: "Internal server error",
