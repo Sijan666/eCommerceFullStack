@@ -113,35 +113,65 @@ const createsubCategory = async (req,res) => {
 }
 
 // all sub categories
-const allsubCategories = async (req,res) => {
-    let subcategories = await SubCategory.find({}).populate('parentCategory')
-    return res.status(200).json({
-        success : true,
-        message : "All sub categories",
-        data : subcategories
-    })
+const allsubCategories = async (req, res) => {
+    try {
+        let subcategories = await SubCategory.find({}).populate('parentCategory');
+        
+        return res.status(200).json({
+            success: true,
+            message: "All sub categories fetched successfully",
+            data: subcategories
+        });
+    } catch (error) {
+        console.error("Error in allsubCategories:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch sub categories",
+            error: error.message
+        });
+    }
 }
 
 // category wise sub category
-const categorywisesubcategory = async (req,res) => {
-    let {id} = req.params
-    let categorywisesubcategory = await SubCategory.find({parentCategory : id})
-    return res.status(200).json({
-        success : true,
-        message : "Category Wise Sub Category",
-        data : categorywisesubcategory
-    })
+const categorywisesubcategory = async (req, res) => {
+    try {
+        let { id } = req.params;
+        let categorywisesubcategory = await SubCategory.find({ parentCategory: id });
+        
+        return res.status(200).json({
+            success: true,
+            message: "Category Wise Sub Category fetched successfully",
+            data: categorywisesubcategory
+        });
+    } catch (error) {
+        console.error("Error in categorywisesubcategory:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch category wise sub category",
+            error: error.message
+        });
+    }
 }
 
 // owner wise category
-const ownerwisecategory = async (req,res) => {
-    let {id} = req.params
-    const data = await ownerCategoryPromise(id)
-    return res.status(200).json({
-        success : true,
-        message : "Owner wise category",
-        data : data
-    })
+const ownerwisecategory = async (req, res) => {
+    try {
+        let { id } = req.params;
+        const data = await ownerCategoryPromise(id);
+
+        return res.status(200).json({
+            success: true,
+            message: "Owner wise category fetched successfully",
+            data: data
+        });
+    } catch (error) {
+        console.error("Error in ownerwisecategory:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
 }
 
 
