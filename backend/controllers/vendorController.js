@@ -56,7 +56,7 @@ const createCategory = async (req,res) => {
 }
 
 
-// all categories
+// all
 const allCategories = async (req,res) => {
     // let categories = await Categories.find({}).populate('owner','-password')
     let categories = await Categories.find({}).populate('owner')
