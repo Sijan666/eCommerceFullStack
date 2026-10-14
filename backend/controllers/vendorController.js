@@ -4,7 +4,7 @@ const {notifyAdminEmail,subCatAdminEmail} = require('../utils/emailSender');
 const User = require("../models/userSchema");
 const ownerCategoryPromise = require('../utils/ownerCategoryPromise')
 
-// create
+// create category
 const createCategory = async (req,res) => {
     try {
         let {name,owner} = req.body;
