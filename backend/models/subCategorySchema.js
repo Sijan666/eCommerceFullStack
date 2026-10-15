@@ -9,8 +9,8 @@ const subCategorySchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['active' , 'deactive' , 'rejected'] ,
-        default: 'deactive'
+        enum: ['active' , 'deactivate' , 'rejected'] ,
+        default: 'deactivate'
     },
     parentCategory : {
         type : Schema.Types.ObjectId,
@@ -18,4 +18,4 @@ const subCategorySchema = new Schema({
     }
 })
 
-module.exports = mongoose.model("subCategory", subCategorySchema);
+module.exports = mongoose.model("SubCategory", subCategorySchema);
