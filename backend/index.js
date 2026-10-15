@@ -10,7 +10,6 @@ const adminRoute = require('./routes/adminRoute');
 const vendorRoute = require('./routes/vendorRoute');
 const { adminMiddleware, vendorMiddleware, userMiddleware } = require('./middlewares/roleMiddleware');
 
-
 const app = express();
 
 mongoDb()
