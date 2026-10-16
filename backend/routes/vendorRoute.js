@@ -13,7 +13,7 @@ router.get('/user/:id/category' , ownerwisecategory)
 
 
 // product
-router.post("/createproduct",upload.array('image'), createproduct)
+router.post("/createproduct", upload.array('image', 5), createproduct);
 router.get('/allproducts',allproducts)
 router.delete('/product/delete/:id', deleteProduct);
 router.get('/product/category/:id' , categoryWiseProducts)
