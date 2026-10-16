@@ -155,7 +155,7 @@ const categoryWiseProducts = async (req, res) => {
 };
 
 
-// sub category wise products
+// category wise products
 const subCategoryWiseProducts = async (req, res) => {
     try {
         const { id } = req.params;
