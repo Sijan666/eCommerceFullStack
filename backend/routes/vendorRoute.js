@@ -19,6 +19,6 @@ router.delete('/product/delete/:id', deleteProduct);
 router.get('/product/category/:id' , categoryWiseProducts)
 router.get('/product/subcategory/:id' , subCategoryWiseProducts)
 router.get('/product/owner/:id', ownerWiseProducts)
-router.post('/bulk/product' , upload.single('file') , bulkProductUpload)
+router.post('/bulk/productupload' , upload.single('file') , bulkProductUpload)
 
 module.exports = router
