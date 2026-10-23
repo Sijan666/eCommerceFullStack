@@ -1,4 +1,57 @@
 const Product = require('../models/productSchema')
+const readSheet = require('read-excel-file/node')
+
+
+const schema = {
+    title: {
+        column: 'title',
+        type: String
+    },
+    description: {
+        column: 'description',
+        type: String
+    },
+    shortDescription: {
+        column: 'shortDescription',
+        type: String
+    },
+    price: {
+        column: 'price',
+        type: Number
+    },
+    images: {
+        url: {
+            column: 'images.url',
+            type: String
+        },
+        isMain: {
+            column: 'images.isMain',
+            type: Boolean
+        }
+    },
+    discount: {
+        column: 'discount',
+        type: Number
+    },
+    stock: {
+        column: 'stock',
+        type: Number
+    },
+    status: {
+        column: 'status',
+        type: String
+    }
+};
+
+
+let bulkProductUpload = async (req,res) => {
+    console.log('hello' , req.file)
+    const { objects, errors } = await readSheet(req.file.path, { schema })
+
+    console.log('error',errors);
+    console.log('objects',objects);
+}
+
 
 // create product
 const createproduct = async (req,res) => {
@@ -198,4 +251,4 @@ const ownerWiseProducts = async (req, res) => {
     }
 };
 
-module.exports = {createproduct , allproducts , deleteProduct ,categoryWiseProducts , subCategoryWiseProducts ,  ownerWiseProducts}
+module.exports = {createproduct , allproducts , deleteProduct ,categoryWiseProducts , subCategoryWiseProducts ,  ownerWiseProducts , bulkProductUpload}
