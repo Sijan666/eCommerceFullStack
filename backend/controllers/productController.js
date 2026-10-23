@@ -1,55 +1,51 @@
 const Product = require('../models/productSchema')
-const readSheet = require('read-excel-file/node')
+const {readSheet} = require('read-excel-file/node')
+const schema = require('../utils/bulkSchema');
 
 
-const schema = {
-    title: {
-        column: 'title',
-        type: String
-    },
-    description: {
-        column: 'description',
-        type: String
-    },
-    shortDescription: {
-        column: 'shortDescription',
-        type: String
-    },
-    price: {
-        column: 'price',
-        type: Number
-    },
-    images: {
-        url: {
-            column: 'images.url',
-            type: String
-        },
-        isMain: {
-            column: 'images.isMain',
-            type: Boolean
+// upload bulk product
+const bulkProductUpload = async (req, res) => {
+    try {
+        const { objects, errors } = await readSheet(req.file.path, { schema });
+        
+        if (errors) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Excel format error! Please check your file.", 
+                errors: errors 
+            });
         }
-    },
-    discount: {
-        column: 'discount',
-        type: Number
-    },
-    stock: {
-        column: 'stock',
-        type: Number
-    },
-    status: {
-        column: 'status',
-        type: String
+
+        const products = objects.map((product) => { 
+            return {
+                ...product,
+                slug : product.slug ? product.slug : product.title.toLowerCase().split(" ").join("-"),
+                sku : product.sku ? product.sku : `eco-${product.title.substring(0,4)}-${Date.now()}`,
+                images: [
+                    {
+                        url: product.images,
+                        isMain: false
+                    }
+                ]
+            };
+        });
+
+        console.log(products);
+
+        await Product.insertMany(products);
+
+        return res.status(201).json({
+            success : true,
+            message : "All products uploaded successfully"
+        });
+    } catch (error) {
+        console.error("Bulk Upload Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "server error",
+            error: error.message
+        });
     }
-};
-
-
-let bulkProductUpload = async (req,res) => {
-    console.log('hello' , req.file)
-    const { objects, errors } = await readSheet(req.file.path, { schema })
-
-    console.log('error',errors);
-    console.log('objects',objects);
 }
 
 
