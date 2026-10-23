@@ -1,6 +1,6 @@
 const express = require("express")
 const { createCategory, allCategories, createsubCategory, allsubCategories, categorywisesubcategory, ownerwisecategory } = require("../controllers/vendorController")
-const { createproduct, allproducts, categoryWiseProducts, ownerWiseProducts, subCategoryWiseProducts, deleteProduct } = require("../controllers/productController")
+const { createproduct, allproducts, categoryWiseProducts, ownerWiseProducts, subCategoryWiseProducts, deleteProduct, bulkProductUpload } = require("../controllers/productController")
 const router = express.Router()
 const upload = require('../utils/storage');
 
@@ -19,5 +19,6 @@ router.delete('/product/delete/:id', deleteProduct);
 router.get('/product/category/:id' , categoryWiseProducts)
 router.get('/product/subcategory/:id' , subCategoryWiseProducts)
 router.get('/product/owner/:id', ownerWiseProducts)
+router.post('/bulk/product' , upload.single('file') , bulkProductUpload)
 
 module.exports = router
