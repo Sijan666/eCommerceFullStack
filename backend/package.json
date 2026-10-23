@@ -20,8 +20,17 @@
     "mongoose": "^9.9.5",
     "multer": "^2.4.0",
     "nodemailer": "^10.0.1",
-    "nodemon": "^3.1.14",
+    "read-excel-file": "^9.3.12",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  },
+  "allowScripts": {
+    "bcrypt@6.0.0": true
+  },
+  "overrides": {
+    "braces": "^3.0.3"
   }
 }
