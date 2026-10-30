@@ -247,4 +247,68 @@ const ownerWiseProducts = async (req, res) => {
     }
 };
 
-module.exports = {createproduct , allproducts , deleteProduct ,categoryWiseProducts , subCategoryWiseProducts ,  ownerWiseProducts , bulkProductUpload}
+
+// update product
+const updateProduct = async (req, res) => {
+    try {
+        const { id } = req.params
+
+        if (req.body.sku || req.body.slug) {
+            return res.status(400).json({
+                success: false,
+                message: "Update of SKU or Slug is not allowed",
+            });
+        }
+
+        const existingProduct = await Product.findOne({ _id: id })
+
+        if (!existingProduct) {
+            return res.status(404).json({
+                success: false,
+                message: "Product does not exist.",
+            });
+        }
+
+        const images = [...existingProduct.images]
+        
+        if (req.files) {
+            req.files.map((item) => {
+                images.push({
+                    url: item.path,
+                    isMain: false,
+                });
+            });
+        }
+
+        existingProduct.images = images
+
+        await Product.findByIdAndUpdate(id, req.body, { new: true })
+
+        if (req.body.isMain) {
+            existingProduct.images.map((item) => {
+                item.isMain = false;
+            });
+            existingProduct.images[req.body.isMain].isMain = true
+        }
+
+        if (req.body.deleteImage) {
+            existingProduct.images[0].isMain = true;
+            existingProduct.images.splice(req.body.deleteImage, 1)
+        }
+
+        await existingProduct.save()
+
+        res.status(200).json({
+            success: true,
+            message: "Product details have been updated successfully."
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+};
+
+
+module.exports = {createproduct , allproducts , deleteProduct ,categoryWiseProducts , subCategoryWiseProducts ,  ownerWiseProducts , bulkProductUpload , updateProduct}
