@@ -1,5 +1,5 @@
 const express = require("express")
-const { updateprofileController, createCategory, allCategories } = require("../controllers/userController")
+const { updateprofileController } = require("../controllers/userController")
 const router = express.Router()
 
 /**
