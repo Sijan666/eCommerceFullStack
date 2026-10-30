@@ -1,6 +1,6 @@
-const express = require("express")
-const { alluserController, deleteUserController, singleUserController, activeUserController, deactiveUserController, updateUserController, updateCategory, deleteCategory } = require("../controllers/adminController")
-const router = express.Router()
+const express = require("express");
+const { alluserController, deleteUserController, singleUserController, activeUserController, deactiveUserController, updateUserController, updateCategory, deleteCategory, categoryStatus } = require("../controllers/adminController");
+const router = express.Router();
 
 /**
  * @swagger
@@ -19,7 +19,7 @@ const router = express.Router()
  *       200:
  *         description: success
  */
-router.get("/alluser", alluserController)
+router.get("/alluser", alluserController);
 
 /**
  * @swagger
@@ -157,4 +157,32 @@ router.post("/updatecategory/:id", updateCategory);
  */
 router.delete("/deletecategory/:id", deleteCategory);
 
-module.exports = router
+/**
+ * @swagger
+ * /api/v1/admin/categorystatus/{id}:
+ *   patch:
+ *     summary: update category status
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 description: The new status of the category
+ *     responses:
+ *       200:
+ *         description: success
+ */
+router.patch("/categorystatus/:id", categoryStatus);
+
+module.exports = router;
