@@ -148,4 +148,34 @@ const deleteCategory = async (req, res) => {
     }
 };
 
-module.exports = {alluserController, deleteUserController , singleUserController,activeUserController,deactiveUserController,updateUserController,updateCategory,deleteCategory}
+
+// category status
+const categoryStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        const updatedCategory = await Category.findByIdAndUpdate(id, { status },{ new: true });
+
+        if (!updatedCategory) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Category not found" 
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Category status changed successfully",
+            data: updatedCategory
+        });
+    } catch (error) {
+        return res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+};
+
+
+module.exports = {alluserController, deleteUserController , singleUserController,activeUserController,deactiveUserController,updateUserController,updateCategory,deleteCategory , categoryStatus}
