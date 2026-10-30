@@ -1,6 +1,6 @@
-const express = require("express")
-const router = express.Router()
-const {registrationController,loginController,verifyController, forgetPasswordController, resetPasswordController} = require("../controllers/authControllers")
+const express = require("express");
+const router = express.Router();
+const { registrationController, loginController, verifyController, forgetPasswordController, resetPasswordController } = require("../controllers/authControllers");
 
 /**
  * @swagger
@@ -37,7 +37,7 @@ const {registrationController,loginController,verifyController, forgetPasswordCo
  *       201:
  *         description: registration successful
  */
-router.post("/registration", registrationController)
+router.post("/registration", registrationController);
 
 /**
  * @swagger
@@ -61,7 +61,7 @@ router.post("/registration", registrationController)
  *       200:
  *         description: login successful
  */
-router.post("/login", loginController)
+router.post("/login", loginController);
 
 /**
  * @swagger
@@ -80,7 +80,7 @@ router.post("/login", loginController)
  *       200:
  *         description: account verified
  */
-router.post("/verify/:token", verifyController)
+router.post("/verify/:token", verifyController);
 
 /**
  * @swagger
@@ -102,7 +102,7 @@ router.post("/verify/:token", verifyController)
  *       200:
  *         description: email sent
  */
-router.post("/forgetpassword", forgetPasswordController)
+router.post("/forgetpassword", forgetPasswordController);
 
 /**
  * @swagger
@@ -132,6 +132,6 @@ router.post("/forgetpassword", forgetPasswordController)
  *       200:
  *         description: password reset successful
  */
-router.post("/resetpassword/:token", resetPasswordController)
+router.post("/resetpassword/:token", resetPasswordController);
 
-module.exports = router
+module.exports = router;
