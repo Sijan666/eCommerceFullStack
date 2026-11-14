@@ -311,4 +311,18 @@ const updateProduct = async (req, res) => {
 };
 
 
-module.exports = {createproduct , allproducts , deleteProduct ,categoryWiseProducts , subCategoryWiseProducts ,  ownerWiseProducts , bulkProductUpload , updateProduct}
+// single product
+const getSingleProduct = async (req,res) => {
+    let {slug} = req.params
+
+    let singleProduct =  await Product.findOne({slug})
+
+    res.status(200).json({
+        success : true,
+        message : "Single Product",
+        data : singleProduct
+    })
+}
+
+
+module.exports = {createproduct , allproducts , deleteProduct ,categoryWiseProducts , subCategoryWiseProducts ,  ownerWiseProducts , bulkProductUpload , updateProduct , getSingleProduct}
