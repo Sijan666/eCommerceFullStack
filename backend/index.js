@@ -20,7 +20,7 @@ app.use(cors());
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
 
 app.use('/api/v1/auth', authRoute)
-app.use('/api/v1/user',userMiddleware, userRoute)
+app.use('/api/v1/user', userRoute)
 app.use('/api/v1/admin',adminMiddleware, adminRoute)
 app.use('/api/v1/vendor', vendorRoute)
 
