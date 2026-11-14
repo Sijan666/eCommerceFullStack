@@ -1,6 +1,6 @@
 const express = require("express")
-const { createCategory, allCategories, createsubCategory, allsubCategories, categorywisesubcategory, ownerwisecategory } = require("../controllers/vendorController")
-const { createproduct, allproducts, categoryWiseProducts, ownerWiseProducts, subCategoryWiseProducts, deleteProduct, bulkProductUpload, updateProduct } = require("../controllers/productController")
+const { createCategory, createsubCategory } = require("../controllers/vendorController")
+const { createproduct, categoryWiseProducts, ownerWiseProducts, subCategoryWiseProducts, deleteProduct, bulkProductUpload, updateProduct } = require("../controllers/productController")
 const router = express.Router()
 const upload = require('../utils/storage');
 
@@ -58,68 +58,11 @@ router.post("/createcategory", createCategory)
  */
 router.post("/createsubcategory", createsubCategory)
 
-/**
- * @swagger
- * /api/v1/vendor/allcategories:
- *   get:
- *     summary: Get all categories
- *     tags: [Vendor]
- *     responses:
- *       200:
- *         description: Successfully fetched all categories
- */
-router.get("/allcategories", allCategories)
-
-/**
- * @swagger
- * /api/v1/vendor/suballcategories:
- *   get:
- *     summary: Get all subcategories
- *     tags: [Vendor]
- *     responses:
- *       200:
- *         description: Successfully fetched all subcategories
- */
-router.get("/suballcategories", allsubCategories)
-
-/**
- * @swagger
- * /api/v1/vendor/category/{id}/subcategory:
- *   get:
- *     summary: Get subcategories by category ID
- *     tags: [Vendor]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Success
- */
-router.get('/category/:id/subcategory', categorywisesubcategory)
-
-/**
- * @swagger
- * /api/v1/vendor/user/{id}/category:
- *   get:
- *     summary: Get categories by owner/user ID
- *     tags: [Vendor]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Success
- */
-router.get('/user/:id/category', ownerwisecategory)
 
 
-// ==================== PRODUCT ROUTES ====================
+
+
+// product route
 
 /**
  * @swagger
@@ -152,17 +95,6 @@ router.get('/user/:id/category', ownerwisecategory)
  */
 router.post("/createproduct", upload.array('image', 5), createproduct);
 
-/**
- * @swagger
- * /api/v1/vendor/allproducts:
- *   get:
- *     summary: Get all products
- *     tags: [Product]
- *     responses:
- *       200:
- *         description: Successfully fetched all products
- */
-router.get('/allproducts', allproducts)
 
 /**
  * @swagger
@@ -293,5 +225,6 @@ router.post('/bulk/productupload', upload.single('file'), bulkProductUpload)
  *         description: Product updated successfully
  */
 router.post("/updateproduct/:id", upload.array("photo"), updateProduct);
+
 
 module.exports = router
