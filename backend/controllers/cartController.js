@@ -4,6 +4,7 @@ let Cart = require('../models/cartSchema');
 // create cart
 const createCart = async (req, res) => {
     try {
+        
         let { productId, quantity = 1, owner } = req.body;
 
         if (!productId || !owner) {
@@ -14,10 +15,19 @@ const createCart = async (req, res) => {
         }
 
         let existingProduct = await Product.findOne({ _id: productId });
+
+        if (!existingProduct) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found"
+            });
+        }
+
         let existingCart = await Cart.findOne({ productId: productId, owner });
 
         if (existingCart) {
-            let total = existingCart.quantity + 1;
+
+            let total = existingCart.quantity + Number(quantity);
 
             if (total > existingProduct.stock) {
                 return res.status(400).json({
@@ -26,7 +36,8 @@ const createCart = async (req, res) => {
                 });
             }
 
-            existingCart.quantity = existingCart.quantity + 1;
+            // save updated cart quantity
+            existingCart.quantity = total;
             await existingCart.save();
             return res.status(201).json({
                 success: true,
@@ -66,10 +77,17 @@ const createCart = async (req, res) => {
     }
 };
 
-// increment or decrement cart quantity
+// increment or decrement
 const increDecre = async (req, res) => {
     try {
         let { cartId, quantity, owner, type } = req.body;
+
+        if (!cartId || !owner || !type) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Data"
+            });
+        }
 
         let existingCart = await Cart.findOne({ _id: cartId, owner }).populate("productId");
 
@@ -80,8 +98,9 @@ const increDecre = async (req, res) => {
             });
         }
 
+        // handle increment
         if (type == "plus") {
-            let total = existingCart.quantity + quantity;
+            let total = existingCart.quantity + Number(quantity);
 
             if (total > existingCart.productId.stock) {
                 return res.status(400).json({
@@ -89,15 +108,14 @@ const increDecre = async (req, res) => {
                     message: "Requested quantity exceeds available stock"
                 });
             } else {
-                existingCart.quantity = existingCart.quantity + quantity;
+                existingCart.quantity = total;
             }
+        } else if (type == "minus") {
+            // handle decrement and remove if below 1
+            existingCart.quantity = existingCart.quantity - Number(quantity);
 
-            existingCart.quantity = existingCart.quantity + 1;
-        } else {
-            if (existingCart.quantity > 1) {
-                existingCart.quantity = existingCart.quantity - 1;
-            } else {
-                // delete cart if quantity becomes 0
+            if (existingCart.quantity < 1) {
+                // delete cart if quantity becomes less than 1
                 await Cart.findByIdAndDelete(cartId);
 
                 return res.status(200).json({
@@ -132,9 +150,17 @@ const getCart = async (req, res) => {
 
         console.log(carts);
 
+        if (!carts || carts.length == 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Cart is empty"
+            });
+        }
+
         return res.status(200).json({
             success: true,
             message: "Cart fetched successfully",
+            count: carts.length,
             data: carts
         });
     } catch (error) {
@@ -146,4 +172,43 @@ const getCart = async (req, res) => {
     }
 };
 
-module.exports = { createCart, increDecre, getCart };
+// delete product
+const deleteProduct = async (req, res) => {
+    try {
+        let { productId } = req.params;
+
+        // block deletion if product exists in any cart
+        let existingInCart = await Cart.findOne({ productId });
+
+        if (existingInCart) {
+            return res.status(400).json({
+                success: false,
+                message: "Cannot delete product because it is currently in a user's cart"
+            });
+        }
+
+        // delete product
+        let deletedProduct = await Product.findByIdAndDelete(productId);
+
+        if (!deletedProduct) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Product deleted successfully",
+            data: deletedProduct
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to delete product",
+            error: error.message
+        });
+    }
+};
+
+module.exports = { createCart, increDecre, getCart, deleteProduct };
