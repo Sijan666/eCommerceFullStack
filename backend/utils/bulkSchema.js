@@ -19,8 +19,8 @@ const schema = {
         column: 'images.url',
         type: String
     },
-    discount: {
-        column: 'discount',
+    discountPrice: {
+        column: 'discountPrice',
         type: Number
     },
     stock: {
