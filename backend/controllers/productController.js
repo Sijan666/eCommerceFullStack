@@ -1,4 +1,5 @@
 const Product = require('../models/productSchema')
+const Cart = require('../models/cartSchema')
 const {readSheet} = require('read-excel-file/node')
 const schema = require('../utils/bulkSchema');
 
@@ -51,85 +52,126 @@ const bulkProductUpload = async (req, res) => {
 
 // create product
 const createproduct = async (req,res) => {
-    let {title,description,shortDescription,price,discount,brand,category,subCategory,isMain,owner,stock} = req.body
+    try {
+        let {title,description,shortDescription,price,discountPrice,discountType,discountDate,category,subCategory,isMain,owner,stock} = req.body
+        
+        if (!title || !description || !shortDescription || !price || discountPrice === undefined || discountPrice === "" || !category || !subCategory) {
+            return res.status(400).json({
+                success: false,
+                message: "Please fill all the field"
+            });
+        }
 
-    if (!title || !description || !shortDescription || !price || !discount || !brand || !category || !subCategory) {
-        return res.status(400).json({
-            success : false ,
-            message : "Please fill all the field"
+        if (discountPrice && discountType) {
+            if (discountType == "percent") {
+                let afterDiscount = (price * discountPrice) / 100
+                if (afterDiscount >= price ) {
+                    return res.status(400).json({
+                        success : false,
+                        message : "Discount price can't be higher than original price"
+                    })
+                }
+            }else{
+                if (discountPrice >= price ) {
+                    return res.status(400).json({
+                        success : false,
+                        message : "Discount price can't be higher than original price"
+                    })
+                }
+            }
+        }
+
+        if (discountDate) {
+            const inputDate = new Date(discountDate);
+            const today = new Date();
+            inputDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            if (inputDate < today) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Discount date cannot be in the past"
+                });
+            }
+        }
+
+        let images = []
+
+        req.files?.map((item,index) => {
+            images.push({
+                url : item.path,
+                isMain : index == isMain ? true : false
+            })
         })
-    }
 
-    let images = []
+        if (price <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Price must be greater than zero."
+            })
+        }
 
-    req.files.map((item,index) => {
-        images.push({
-            url : item.path,
-            isMain : index == isMain ? true : false
+        if (discountPrice < 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Discount cannot be negative."
+            })
+        }
+
+        if (stock < 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Stock cannot be negative."
+            })
+        }
+
+        let slug = title.toLowerCase().split(" ").join("-");
+
+        let existingProductSlug = await Product.findOne({slug})
+        if (existingProductSlug) {
+            return res.status(400).json({
+                success: false,
+                message: "Slug is already exist"
+            })
+        }
+
+        let sku = `eco-${Date.now()}`
+
+        let existingSku = await Product.findOne({sku})
+        if (existingSku) {
+            return res.status(400).json({
+                success: false,
+                message: "Sku is already exist"
+            })
+        }
+
+        let product = await new Product({
+            title,
+            description,
+            shortDescription,
+            price,
+            discountPrice,
+            discountType,
+            discountDate,
+            stock,
+            category,
+            subCategory,
+            slug,
+            sku,
+            images,
+            owner
+        }).save()
+
+        res.status(201).json({
+            success : true,
+            message : "Product Created Successfully",
+            product : product
         })
-    })
-
-    if (price <= 0) {
-        return res.status(400).json({
+    } catch (error) {
+        return res.status(500).json({
             success: false,
-            message: "Price must be greater than zero."
+            message: `Internal server error : ${error.message}`
         })
     }
-
-    if (discount < 0) {
-        return res.status(400).json({
-            success: false,
-            message: "Discount cannot be negative."
-        })
-    }
-
-    if (stock < 0) {
-        return res.status(400).json({
-            success: false,
-            message: "Stock cannot be negative."
-        })
-    }
-
-    let slug = title.toLowerCase().split(" ").join("-");
-
-    let existingProductSlug = await Product.findOne({slug})
-    if (existingProductSlug) {
-        return res.status(400).json({
-            success: false,
-            message: "Slug is already exist"
-        })
-    }
-
-    let sku = `eco-${Date.now()}`
-
-    let existingSku = await Product.findOne({sku})
-    if (existingSku) {
-        return res.status(400).json({
-            success: false,
-            message: "Sku is already exist"
-        })
-    }
-
-    let product = await new Product({
-        title,
-        description,
-        shortDescription,
-        price,
-        discount,
-        brand,
-        category,
-        subCategory,
-        slug,
-        sku,
-        images,
-        owner
-    }).save()
-
-    res.status(201).json({
-        success : true,
-        message : "Product Created Successfully",
-        product : product
-    })
 }
 
 
@@ -157,6 +199,15 @@ const allproducts = async (req, res) => {
 const deleteProduct = async (req, res) => {
     try {
         const { id } = req.params;
+
+        const existingInCart = await Cart.findOne({ productId: id });
+
+        if (existingInCart) {
+            return res.status(400).json({
+                success: false,
+                message: "Cannot delete product because it is currently in a user's cart"
+            });
+        }
 
         const deletedProduct = await Product.findByIdAndDelete(id);
 
@@ -187,7 +238,21 @@ const categoryWiseProducts = async (req, res) => {
     try {
         const { id } = req.params;
 
-        let products = await Product.find({ category: id })
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Data"
+            });
+        }
+
+        let products = await Product.find({ category: id }).populate(["category", "subCategory", "owner"])
+
+        if (!products || products.length == 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found"
+            });
+        }
 
         return res.status(200).json({
             success: true,
@@ -209,7 +274,21 @@ const subCategoryWiseProducts = async (req, res) => {
     try {
         const { id } = req.params;
 
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Data"
+            });
+        }
+
         let products = await Product.find({ subCategory: id })
+
+        if (!products || products.length == 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found"
+            });
+        }
 
         return res.status(200).json({
             success: true,
@@ -231,7 +310,21 @@ const ownerWiseProducts = async (req, res) => {
     try {
         const { id } = req.params;
 
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Data"
+            });
+        }
+
         let products = await Product.find({ owner: id })
+
+        if (!products || products.length == 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found"
+            });
+        }
 
         return res.status(200).json({
             success: true,
@@ -251,7 +344,8 @@ const ownerWiseProducts = async (req, res) => {
 // update product
 const updateProduct = async (req, res) => {
     try {
-        const { id } = req.params
+        const { id } = req.params;
+        const { price, discountPrice, discountType } = req.body;
 
         if (req.body.sku || req.body.slug) {
             return res.status(400).json({
@@ -260,7 +354,7 @@ const updateProduct = async (req, res) => {
             });
         }
 
-        const existingProduct = await Product.findOne({ _id: id })
+        const existingProduct = await Product.findOne({ _id: id });
 
         if (!existingProduct) {
             return res.status(404).json({
@@ -269,8 +363,44 @@ const updateProduct = async (req, res) => {
             });
         }
 
-        const images = [...existingProduct.images]
-        
+        let currentPrice = price || existingProduct.price;
+
+        let currentType = discountType || existingProduct.discountType;
+
+        if (discountType && discountType !== "percent" && discountType !== "fixed") {
+            return res.status(400).json({
+                success: false,
+                message: "Discount type must be 'percent' or 'fixed'"
+            });
+        }
+
+        if (discountPrice !== undefined && discountPrice !== "") {
+            if (discountPrice < 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Discount cannot be negative."
+                });
+            }
+
+            if (currentType === "percent") {
+                if (discountPrice >= 100) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Discount percentage can't be 100 or more"
+                    });
+                }
+            } else {
+                if (discountPrice >= currentPrice) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Discount price can't be higher than or equal to price"
+                    });
+                }
+            }
+        }
+
+        const images = [...existingProduct.images];
+
         if (req.files) {
             req.files.map((item) => {
                 images.push({
@@ -280,48 +410,68 @@ const updateProduct = async (req, res) => {
             });
         }
 
-        existingProduct.images = images
+        existingProduct.images = images;
 
-        await Product.findByIdAndUpdate(id, req.body, { new: true })
+        await Product.findByIdAndUpdate(id, req.body, { new: true });
 
         if (req.body.isMain) {
             existingProduct.images.map((item) => {
                 item.isMain = false;
             });
-            existingProduct.images[req.body.isMain].isMain = true
+            existingProduct.images[req.body.isMain].isMain = true;
         }
 
         if (req.body.deleteImage) {
             existingProduct.images[0].isMain = true;
-            existingProduct.images.splice(req.body.deleteImage, 1)
+            existingProduct.images.splice(req.body.deleteImage, 1);
         }
 
-        await existingProduct.save()
+        await existingProduct.save();
 
         res.status(200).json({
             success: true,
             message: "Product details have been updated successfully."
         });
     } catch (error) {
-        res.status(500).json({ 
-            success: false, 
-            message: error.message 
+        res.status(500).json({
+            success: false,
+            message: error.message
         });
     }
 };
 
-
 // single product
 const getSingleProduct = async (req,res) => {
-    let {slug} = req.params
+    try {
+        let {slug} = req.params
 
-    let singleProduct =  await Product.findOne({slug})
+        if (!slug) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Data"
+            });
+        }
 
-    res.status(200).json({
-        success : true,
-        message : "Single Product",
-        data : singleProduct
-    })
+        let singleProduct = await Product.findOne({slug})
+
+        if (!singleProduct) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found"
+            });
+        }
+
+        res.status(200).json({
+            success : true,
+            message : "Single Product",
+            data : singleProduct
+        })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: `Internal server error : ${error.message}`
+        })
+    }
 }
 
 
