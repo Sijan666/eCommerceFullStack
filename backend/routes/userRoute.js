@@ -3,34 +3,34 @@ const { updateprofileController } = require("../controllers/userController")
 const { getSingleProduct, allproducts } = require("../controllers/productController")
 const { ownerwisecategory, categorywisesubcategory, allsubCategories, allCategories } = require("../controllers/vendorController")
 const { createCart, increDecre, getCart } = require("../controllers/cartController")
-const { paymentController } = require("../controllers/paymentController")
+const { paymentController, paymentVerifyController } = require("../controllers/paymentController")
 const router = express.Router()
 
 /**
- * @swagger
- * tags:
- *   name: User
- *   description: user panel routes
+- @swagger
+- tags:
+-   name: User
+-   description: user panel routes
  */
 
 /**
- * @swagger
- * /api/v1/user/updateprofile:
- *   post:
- *     summary: update user profile
- *     tags: [User]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               fullName:
- *                 type: string
- *     responses:
- *       200:
- *         description: success
+- @swagger
+- /api/v1/user/updateprofile:
+-   post:
+-     summary: update user profile
+-     tags: [User]
+-     requestBody:
+-       required: true
+-       content:
+-         application/json:
+-           schema:
+-             type: object
+-             properties:
+-               fullName:
+-                 type: string
+-     responses:
+-       200:
+-         description: success
  */
 router.post("/updateprofile", updateprofileController)
 router.get('/allproducts', allproducts)
@@ -46,9 +46,10 @@ router.get('/user/:id/category', ownerwisecategory)
 
 router.post('/create/cart' , createCart)
 router.post('/cart/incredecre' , increDecre)
-router.get('/get/cart',getCart)
+router.get('/get/cart/:owner', getCart)
 
 
 router.post('/payment' , paymentController)
+router.get('/payment/verify/:tran_id/:owner', paymentVerifyController)
 
 module.exports = router
